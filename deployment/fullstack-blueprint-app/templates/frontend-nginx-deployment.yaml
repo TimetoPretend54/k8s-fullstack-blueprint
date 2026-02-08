@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullstack.fullname" . }}-frontend-nginx
+  namespace: {{ .Values.namespace | default "default" }}
+  labels:
+    {{- include "fullstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend-nginx
+spec:
+  # must use index as value fields w/ hyphen because dot notation (e.g., .Values.my-value) will cause syntax error 
+  replicas: {{ index .Values "frontend-nginx" "replicaCount" }}
+  selector:
+    matchLabels:
+      {{- include "fullstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend-nginx
+  template:
+    metadata:
+      annotations:
+        {{- with index .Values "frontend-nginx" "podAnnotations" }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "fullstack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend-nginx
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fullstack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml (index .Values "frontend-nginx" "podSecurityContext") | nindent 8 }}
+      containers:
+        - name: frontend
+          securityContext:
+            {{- toYaml (index .Values "frontend-nginx" "securityContext") | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ index .Values "frontend-nginx" "image" "repository" | default "nginx" }}:{{ index .Values "frontend-nginx" "image" "tag" | default "stable-alpine" }}"
+          imagePullPolicy: {{ index .Values "frontend-nginx" "image" "pullPolicy" }}
+          ports:
+            - name: http
+              containerPort: {{ index .Values "frontend-nginx" "service" "port" }}
+              protocol: TCP
+{{ if index .Values "frontend-nginx" "devspace" "enabled" }}
+          volumeMounts:
+            - name: devspace
+              mountPath: /.devspace
+{{ end }}
+          livenessProbe:
+            {{- toYaml (index .Values "frontend-nginx" "livenessProbe") | nindent 12 }}
+          readinessProbe:
+            {{- toYaml (index .Values "frontend-nginx" "readinessProbe") | nindent 12 }}
+          resources:
+            {{- toYaml (index .Values "frontend-nginx" "resources") | nindent 12 }}
+{{ if index .Values "frontend-nginx" "devspace" "enabled" }}
+      # nginx image issue: This volume ensures that the /.devspace folder exists and is writable,
+      # allowing DevSpace to perform its initial file sync without errors.
+      # This is due to the nginx image not being root/writable by default
+      volumes:
+        - name: devspace
+          emptyDir: {}
+{{ end }}
+      {{ with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{ with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{ with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

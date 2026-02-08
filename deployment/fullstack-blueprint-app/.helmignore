@@ -1,0 +1,60 @@
+# Patterns to ignore when building packages
+# This supports shell glob matching, relative path matching, and negation.
+# Only one pattern per line.
+
+# Ignore the .helmignore file itself
+.helmignore
+
+# Common VCS directories and files
+.git/
+.gitignore
+.bzr/
+.hg/
+.svn/
+
+# Common backup/temp files
+*.swp
+*.bak
+*.tmp
+*~
+
+# Various IDE files and directories
+.project
+.idea/
+*.tmproj
+.vscode/
+
+# Dependency directories
+node_modules/
+vendor/
+dist/
+build/
+.angular/
+bin/
+out/
+target/
+
+# Test and coverage
+coverage/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# Local development files
+.env
+.env.local
+.env.*.local
+.devspace/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

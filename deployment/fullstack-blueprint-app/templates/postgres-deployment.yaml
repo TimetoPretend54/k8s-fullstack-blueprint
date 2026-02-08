@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullstack.fullname" . }}-postgres
+  namespace: {{ .Values.namespace | default "default" }}
+  labels:
+    {{- include "fullstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: {{ .Values.postgres.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "fullstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.postgres.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "fullstack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fullstack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.postgres.podSecurityContext | nindent 8 }}
+      {{ if .Values.postgres.persistence.enabled }}
+      initContainers:
+        - name: init-postgres-data
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          command: ['chown', '-R', '70:70', '/var/lib/postgresql/data']
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      {{ end }}
+      containers:
+        - name: postgres
+          securityContext:
+            {{- toYaml .Values.postgres.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          env:
+            {{- include "fullstack.flattenMap" (list .Values.postgres.config "POSTGRES") | nindent 12 }}
+            {{- if .Values.secrets.postgres.enabled }}
+            {{- include "fullstack.flattenMap" (list .Values.secrets.postgres.data "POSTGRES") | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.postgres.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.postgres.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.postgres.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+          {{ if .Values.postgres.persistence.enabled }}
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          {{ end }}
+      {{ with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ if .Values.postgres.persistence.enabled }}
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: {{ include "fullstack.fullname" . }}-postgres-pvc
+      {{ end }}

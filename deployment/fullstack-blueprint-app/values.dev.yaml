@@ -1,0 +1,95 @@
+# Development overrides for DevSpace workflow
+# This file extends values.yaml with settings optimized for local development
+
+global:
+  environment: development
+
+# Backend development settings
+backend:
+  replicaCount: 1
+  image:
+    repository: public.ecr.aws/docker/library/golang
+    tag: "1.22.12-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: "384Mi"
+      cpu: "300m"
+    limits:
+      memory: "768Mi"
+      cpu: "600m"
+  # Allows sync to have file write permissions
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
+  config:
+    # WARNING: Development-only database credentials with weak password
+    # This is safe for local development because services are not exposed externally
+    # For production, use proper secrets management with strong passwords
+    # DB_HOST is automatically set to the PostgreSQL service name based on the Helm release name.
+    # Override only if you need a custom database host.
+    DB_PORT: "5432"
+    DB_USER: "postgres"
+    DB_PASSWORD: "password"
+    DB_NAME: "k8s_blueprint"
+    DB_SSL_MODE: "disable"
+
+# Frontend development settings
+frontend-nginx:
+  replicaCount: 1
+  image:
+    repository: public.ecr.aws/docker/library/nginx
+    tag: "stable-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: "192Mi"
+      cpu: "150m"
+    limits:
+      memory: "384Mi"
+      cpu: "300m"
+  # Allows sync to have file write permissions
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
+  devspace:
+    enabled: true
+
+# PostgreSQL development settings (smaller resources)
+postgres:
+  replicaCount: 1
+  config:
+    # DEV VALUES - LOCAL DB SO SAFE
+    DB: k8s_blueprint
+    USER: postgres
+    PASSWORD: password
+  persistence:
+    enabled: true  # Enable persistence for dev to test fsGroup fix
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Ingress: explicitly disabled for development (already false in base values)
+ingress:
+  enabled: false
+
+# Ingress-nginx: disable entirely in dev
+ingress-nginx:
+  enabled: false
+
+# ServiceAccount: disable creation (use default) since chart lacks SA template
+serviceAccount:
+  create: false
+
+# Secrets: disable in dev (use plain text values from values.yaml)
+secrets:
+  backend:
+    enabled: false
+  postgres:
+    enabled: false

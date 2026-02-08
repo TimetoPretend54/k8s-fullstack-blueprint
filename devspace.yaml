@@ -1,0 +1,53 @@
+name: k8s-fullstack-blueprint
+version: v2beta1
+
+deployments:
+  fullstack:
+    namespace: ${devspace.namespace}
+    helm:
+      chart:
+        name: fullstack-blueprint-app
+        path: ./deployment/fullstack-blueprint-app
+      releaseName: fullstack-blueprint-devspace
+      valuesFiles:
+        - deployment/fullstack-blueprint-app/values.yaml
+        - deployment/fullstack-blueprint-app/values.dev.yaml
+      values:
+        createNamespaces: false
+        namespace: ${devspace.namespace}
+
+dev:
+  backend:
+    imageSelector: public.ecr.aws/docker/library/golang:1.22.12-alpine
+    ssh: {} # This enables the SSH server in the container
+    attach: {} # Used to attach to a process that is already running inside an existing container, typically the PID 1 process (container entrypoint). We will connect to backend
+    command: ["/"] # Entrypoint (script if needed, must be set for sync)
+    logs: {}
+    workingDir: /go/backend
+    sync:
+      - path: ./backend/go:/go/backend
+        excludePaths:
+          - .git/
+          - vendor/
+          - dist/
+        startContainer: true
+    ports:
+      - port: "8080:8080"
+    terminal:
+      enabled: true
+      command: "sh devspace_start.sh"
+
+  frontend-nginx:
+    labelSelector:
+      app.kubernetes.io/component: frontend-nginx
+    sync:
+      - path: ./frontend/angular/dist/browser:/usr/share/nginx/html
+        startContainer: true
+      - path: ./frontend/angular/nginx.conf:/etc/nginx/nginx.conf
+        startContainer: true
+    command: []  # Use nginx image's default entrypoint and command
+    ports:
+      - port: "4200:80"
+    terminal:
+      enabled: false  # Devspace only allows one terminal at a time and others will fails
+

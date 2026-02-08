@@ -1,0 +1,55 @@
+<div class="home">
+  <h2>Welcome to the Kubernetes Fullstack Blueprint</h2>
+  <p>This is a production-ready demonstration application showcasing:</p>
+  <ul>
+    <li>Go backend with Echo framework</li>
+    <li>Angular 18 frontend with standalone components</li>
+    <li>Docker multi-stage builds</li>
+    <li>Kubernetes orchestration</li>
+    <li>Docker Compose for local development</li>
+  </ul>
+  <p>Navigate to the <a routerLink="/about">About page</a> to learn more about the architecture.</p>
+
+  <hr>
+
+  <h3>Demo Data: UI → API → DB Flow</h3>
+  <p>This section demonstrates the complete data flow from the Angular UI to the Go API to PostgreSQL database.</p>
+
+  <!-- Input Form -->
+  <div class="demo-input">
+    <input
+      type="text"
+      [(ngModel)]="newContent"
+      placeholder="Enter some text..."
+      (keyup.enter)="onSubmit()"
+      [disabled]="isLoading"
+    />
+    <button (click)="onSubmit()" [disabled]="isLoading || !newContent.trim()">
+      {{ isLoading ? 'Saving...' : 'Save to DB' }}
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    Loading...
+  </div>
+
+  <!-- Data List -->
+  <div class="demo-list">
+    <h4>Stored Demo Data ({{ demoDataList.length }})</h4>
+    <ul>
+      <li *ngFor="let item of demoDataList">
+        <strong>#{{ item.id }}</strong>: {{ item.content }}
+        <br><small>{{ item.created_at }}</small>
+      </li>
+    </ul>
+    <p *ngIf="demoDataList.length === 0 && !isLoading" class="empty-state">
+      No demo data yet. Add some above!
+    </p>
+  </div>
+</div>

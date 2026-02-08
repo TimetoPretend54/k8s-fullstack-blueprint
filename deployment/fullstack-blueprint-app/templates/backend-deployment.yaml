@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullstack.fullname" . }}-backend
+  namespace: {{ .Values.namespace | default "default" }}
+  labels:
+    {{- include "fullstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "fullstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.backend.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "fullstack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fullstack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: backend
+          securityContext:
+            {{- toYaml .Values.backend.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.backend.image.repository | default "backend" }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            # Database connection parameters (constructed into DATABASE_URL by the app)
+            - name: DB_HOST
+              value: {{ default .Values.backend.config.DB_HOST (printf "%s-postgres" (include "fullstack.fullname" .)) | quote }}
+            - name: DB_PORT
+              value: {{ .Values.backend.config.DB_PORT | quote }}
+            - name: DB_USER
+              value: {{ .Values.backend.config.DB_USER | quote }}
+            - name: DB_PASSWORD
+              value: {{ .Values.backend.config.DB_PASSWORD | quote }}
+            - name: DB_NAME
+              value: {{ .Values.backend.config.DB_NAME | quote }}
+            - name: DB_SSL_MODE
+              value: {{ .Values.backend.config.DB_SSL_MODE | quote }}
+            {{- include "fullstack.flattenMap" (list .Values.backend.config "CONFIG") | nindent 12 }}
+          {{- if .Values.secrets.backend.enabled }}
+          {{- include "fullstack.flattenMap" (list .Values.secrets.backend.data "SECRET") | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.backend.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{ with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}
+      {{ with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{ end }}

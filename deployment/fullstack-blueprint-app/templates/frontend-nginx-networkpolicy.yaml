@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "fullstack.fullname" . }}-frontend-nginx
+  namespace: {{ .Values.namespace | default "default" }}
+  labels:
+    {{- include "fullstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend-nginx
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "fullstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend-nginx
+  policyTypes:
+    - Ingress
+    - Egress
+  # Ingress: Only allow from kubelet health checks (no external access)
+  ingress:
+    # Allow health checks from kubelet (node IPs - common private CIDRs)
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          # must use index as value fields w/ hyphen because dot notation (e.g., .Values.my-value) will cause syntax error 
+          port: {{ index .Values "frontend-nginx" "service" "port" }}
+  # Egress: Allow to backend, DNS, and kubelet
+  egress:
+    # Allow API calls to backend service
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "fullstack.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: backend
+      ports:
+        - protocol: TCP
+          port: {{ .Values.backend.service.port }}
+    # Allow DNS resolution (kube-dns/coredns in kube-system)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow health check responses to kubelet (node IPs)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: {{ index .Values "frontend-nginx" "service" "port" }}
+    # Allow general cluster communication (optional, for metrics, etc.)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+        - ipBlock:
+            cidr: 172.16.0.0/12
+        - ipBlock:
+            cidr: 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

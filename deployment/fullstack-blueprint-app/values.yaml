@@ -1,0 +1,180 @@
+# Default values for fullstack chart.
+
+# Global settings
+global:
+  environment: development
+  imageRegistry: ""
+  pullPolicy: IfNotPresent
+  backendServicePort: 8080
+
+# Namespace configuration
+createNamespaces: false
+namespace: default
+
+# Backend service configuration
+backend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: backend
+    tag: latest
+    pullPolicy: ""
+  service:
+    type: ClusterIP
+    port: 8080
+  config:
+    APP_ENV: development
+    # WARNING: Database connection parameters must be provided via Kubernetes Secret or external configuration.
+    # Do not use hardcoded credentials in production.
+    DB_HOST: ""
+    DB_PORT: ""
+    DB_USER: ""
+    DB_PASSWORD: ""
+    DB_NAME: ""
+    DB_SSL_MODE: "enable"
+    SERVER_PORT: ""
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+  podSecurityContext: {}
+  probes:
+    liveness:
+      httpGet:
+        path: /health
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      httpGet:
+        path: /health
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Frontend service configuration
+frontend-nginx:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: nginx
+    tag: stable-alpine
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+  podSecurityContext: {}
+  probes:
+    liveness:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  devspace:
+    enabled: false
+
+# PostgreSQL database configuration
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5432
+  config:
+    DB: k8s_blueprint
+    USER: postgres
+    # WARNING: PostgreSQL password must be provided via Kubernetes Secret.
+    # This default value is insecure and should never be used in production.
+    # Generate a strong random password and store it in a secure secret manager.
+    PASSWORD: ""
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 5Gi
+    accessMode: ReadWriteOnce
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  securityContext:
+    runAsUser: 70
+    runAsGroup: 70
+  podSecurityContext:
+    fsGroup: 70
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          service: frontend-nginx
+        - path: /api
+          service: backend
+  tls: []
+
+# Secrets (template values only - actual secrets should be managed externally)
+secrets:
+  backend:
+    enabled: false
+    data: {}
+  postgres:
+    enabled: false
+    data: {}
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}

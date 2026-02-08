@@ -1,0 +1,11 @@
+apiVersion: v2
+name: fullstack
+description: A Helm chart for the k8s-fullstack-blueprint project
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+dependencies:
+  - name: ingress-nginx
+    version: 3.34.0
+    repository: https://kubernetes.github.io/ingress-nginx
+    condition: ingress-nginx.enabled
