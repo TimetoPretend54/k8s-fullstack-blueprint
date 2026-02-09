@@ -49,6 +49,8 @@ spec:
               value: {{ .Values.backend.config.DB_NAME | quote }}
             - name: DB_SSL_MODE
               value: {{ .Values.backend.config.DB_SSL_MODE | quote }}
+            - name: APPT_BOOKING_DB_NAME
+              value: {{ .Values.backend.config.APPT_BOOKING_DB_NAME | quote }}
             {{- include "fullstack.flattenMap" (list .Values.backend.config "CONFIG") | nindent 12 }}
           {{- if .Values.secrets.backend.enabled }}
           {{- include "fullstack.flattenMap" (list .Values.secrets.backend.data "SECRET") | nindent 12 }}

@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <footer>
-      <p>Built with modern web technologies and best practices.</p>
+      <p>Fullstack Blueprint - Go & Angular</p>
     </footer>
   `,
   styles: [`

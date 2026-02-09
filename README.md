@@ -34,7 +34,7 @@ A repository structure and documentation template for building and deploying clo
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Backend API** | Go (Golang) | REST/GraphQL API server, business logic, data access |
+| **Backend API** | Go (Golang) | REST API server, business logic, data access |
 | **Frontend UI** | Angular | Progressive Web App with reactive UI, client-side routing |
 | **Orchestration** | Kubernetes | Container orchestration: deployments, services, ingress |
 | **Containerization** | Docker | Consistent build artifacts, environment isolation |
@@ -94,10 +94,11 @@ k8s-fullstack-blueprint/
 │   ├── Dockerfile       # Multi-stage container build
 │   ├── api/             # HTTP layer (routes, middleware, controllers)
 │   ├── service/         # Business logic layer
-│   └── model/           # Data structures
+│   └── db/              # Database layer (models, repositories, connections)
 ├── frontend/angular/    # Angular frontend application
 │   ├── src/             # Application source code
-│   ├── docker/          # Dockerfile, multi-stage build
+│   ├── nginx/           # Nginx configuration for container
+│   ├── Dockerfile       # Multi-stage container build
 │   ├── angular.json     # Angular CLI configuration
 │   ├── package.json     # NPM dependencies
 │   └── tsconfig.json    # TypeScript configuration
@@ -106,12 +107,30 @@ k8s-fullstack-blueprint/
 │       ├── Chart.yaml    # Chart metadata
 │       ├── values.yaml   # Default configuration values
 │       └── templates/    # Helm templates (deployments, services, ingress, etc.)
-├── docs/                # Additional documentation
-│   ├── architecture.md
-│   ├── development-workflow.md
-│   └── security.md
 └── devspace.yaml        # DevSpace configuration (hot-reload on K8s)
 ```
+
+---
+
+## Appointment Booking Feature (POC)
+
+The appointment booking feature is a **proof-of-concept (POC)** implementation demonstrating:
+- Service and staff management
+- Appointment scheduling with availability checking
+- Customer-facing booking flow
+- Dashboard with basic insights
+
+**Important:** This POC currently returns **all appointments** to any user. In a production environment, you must implement:
+
+- **JWT Authentication:** Extract user identity from JWT tokens
+- **Authorization:** Filter appointments by `user_id` to ensure users can only access their own appointments
+- **Role-based Access:** Differentiate between customer and staff/administrator views
+
+Backend endpoints to secure:
+- `GET /api/appt_booking/appointments` → filter by authenticated user ID
+- `POST /api/appt_booking/appointments` → associate with authenticated user ID
+
+See [`backend/go/api/appt_booking/appointment_handler.go`](backend/go/api/appt_booking/appointment_handler.go) for implementation details.
 
 ---
 
@@ -151,7 +170,7 @@ DevSpace will:
 - Deploy the application's helm chart
 - Build Docker images from source
 - Patch running pods to use local images
-- Sync source code for live reload
+- Sync source code for live reload (Angular: `frontend/angular/dist/browser`)
 - Port-forward services to localhost
 - Open browser to `http://localhost:4200`
 
@@ -160,15 +179,14 @@ DevSpace will:
 - Backend API: http://localhost:8080
 
 **Access database:**
-- ```
-  kubectl port-forward svc/fullstack-postgres 5432:5432 -n {namespace}
-- Then connect with:
-  - ```
-    #   Server: localhost:5432
-    #   Username: postgres
-    #   Password: password
-    #   Database: k8s_blueprint
-    ```
+```bash
+kubectl port-forward svc/fullstack-postgres 5432:5432 -n {namespace}
+```
+Then connect with:
+- Server: localhost:5432
+- Username: postgres
+- Password: password
+- Database: k8s_blueprint
     
 **Stop:** `Ctrl+C` to stop DevSpace (pods remain running). Use `devspace purge` to delete all resources.
 
@@ -287,6 +305,6 @@ kubectl delete pvc -l app.kubernetes.io/instance=fullstack -n database
 
 ---
 
-**Maintained by:** Your Team / Organization  
-**Last Updated:** 2025-02-06  
+**Maintained by:** Adrian B
+**Last Updated:** 2026-02-09
 **Blueprint Version:** 1.0.0

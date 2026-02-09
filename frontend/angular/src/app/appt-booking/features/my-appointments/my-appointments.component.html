@@ -1,0 +1,113 @@
+<div class="my-appointments">
+  <h1>My Appointments</h1>
+  <p class="subtitle">Enter your email to look up your appointments</p>
+  
+   <!-- Search Form -->
+   <div class="search-section" *ngIf="!searchPerformed">
+     <div class="email-search">
+       <input 
+         type="text"
+         [(ngModel)]="email" 
+         placeholder="Enter your email address"
+         (keyup.enter)="searchAppointments()"
+         class="email-input"
+         [attr.list]="availableEmails.length > 0 ? 'emailSuggestions' : null"
+         autocomplete="off"
+         spellcheck="false"
+         inputmode="email"
+       />
+       <datalist id="emailSuggestions" *ngIf="availableEmails.length > 0">
+         <option *ngFor="let email of availableEmails" [value]="email">
+         </option>
+       </datalist>
+       <button 
+         (click)="searchAppointments()" 
+         [disabled]="loading || !email"
+         class="btn btn-primary"
+       >
+         {{ loading ? 'Searching...' : 'Search' }}
+       </button>
+     </div>
+     <p class="help-text" *ngIf="error">{{ error }}</p>
+   </div>
+  
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading appointments...</p>
+  </div>
+  
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && searchPerformed && !loading">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button (click)="searchPerformed = false" class="btn btn-secondary">Try Again</button>
+  </div>
+  
+  <!-- Results -->
+  <div class="results-section" *ngIf="searchPerformed && !loading && !error">
+    
+    <!-- Tabs -->
+    <div class="tabs" *ngIf="appointments.length > 0">
+      <button 
+        class="tab" 
+        [class.active]="upcomingOnly"
+        (click)="upcomingOnly = true"
+      >
+        Upcoming ({{ getUpcomingAppointments().length }})
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="!upcomingOnly"
+        (click)="upcomingOnly = false"
+      >
+        Past ({{ getPastAppointments().length }})
+      </button>
+    </div>
+    
+    <!-- Appointments List -->
+    <div class="appointments-list" *ngIf="(upcomingOnly ? getUpcomingAppointments() : getPastAppointments()).length > 0">
+      <div class="appointment-card" *ngFor="let appt of (upcomingOnly ? getUpcomingAppointments() : getPastAppointments())">
+        <div class="appointment-header">
+          <div class="status-badge" [class]="getStatusBadgeClass(appt.status)">
+            {{ appt.status }}
+          </div>
+           <div class="appointment-date">
+             {{ formatDateTime(appt.appointment_datetime) }}
+           </div>
+        </div>
+        
+        <div class="appointment-body">
+          <h3>{{ appt.service_name }}</h3>
+          <p class="provider">Provider: {{ appt.staff_name }}</p>
+          <p class="duration">Duration: {{ appt.duration_minutes }} minutes</p>
+          <p class="price">Price: {{ formatPrice(appt.price_cents) }}</p>
+          <p class="notes" *ngIf="appt.notes">
+            <strong>Notes:</strong> {{ appt.notes }}
+          </p>
+        </div>
+        
+        <div class="appointment-actions" *ngIf="appt.status === 'confirmed' && upcomingOnly">
+          <button 
+            (click)="cancelAppointment(appt.id)" 
+            class="btn btn-danger"
+            [disabled]="loading"
+          >
+            Cancel Appointment
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No Appointments -->
+    <div class="no-appointments" *ngIf="(upcomingOnly ? getUpcomingAppointments() : getPastAppointments()).length === 0">
+      <p *ngIf="upcomingOnly">You have no upcoming appointments.</p>
+      <p *ngIf="!upcomingOnly">You have no past appointments.</p>
+    </div>
+  </div>
+  
+  <!-- Initial State -->
+  <div class="initial-state" *ngIf="!searchPerformed">
+    <p>Enter your email above to find your appointments.</p>
+  </div>
+</div>

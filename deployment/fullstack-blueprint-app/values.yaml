@@ -33,6 +33,8 @@ backend:
     DB_NAME: ""
     DB_SSL_MODE: "enable"
     SERVER_PORT: ""
+    # Appointment booking database name (separate database for feature isolation)
+    APPT_BOOKING_DB_NAME: ""
   resources:
     requests:
       memory: "128Mi"

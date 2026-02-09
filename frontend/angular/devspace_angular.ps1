@@ -35,7 +35,8 @@ Write-Host "- Some ports will be forwarded, so you can access this container via
 Write-Host "- Run 'npm run watch' to start the application manually" -ForegroundColor $ColorYellow
 Write-Host "- Or just let ng serve handle it automatically (it's already running)" -ForegroundColor $ColorYellow
 Write-Host ""
-Write-Host "Navigate to http://localhost:4200/ view your application." -ForegroundColor $ColorCyan
+Write-Host "Navigate to http://localhost:4200/ to view your 'hello-world' application." -ForegroundColor $ColorCyan
+Write-Host "Navigate to http://localhost:4200/appt-booking/home/ to view your 'appt-booking' application." -ForegroundColor $ColorCyan
 
 # Run npm run watch (this typically runs ng build --watch)
 npm run watch

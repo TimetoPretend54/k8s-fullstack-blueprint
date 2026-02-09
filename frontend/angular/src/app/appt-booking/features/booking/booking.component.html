@@ -1,0 +1,198 @@
+<div class="booking-container">
+  <h1>Book an Appointment</h1>
+  
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+  
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  
+  <!-- Step Indicator -->
+  <div class="step-indicator">
+    <div class="step" [class.active]="currentStep === 'service'" [class.completed]="selectedService">
+      <span class="step-number">1</span>
+      <span class="step-label">Select Service</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 'staff'" [class.completed]="selectedStaff">
+      <span class="step-number">2</span>
+      <span class="step-label">Select Staff</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 'schedule'" [class.completed]="selectedSchedule">
+      <span class="step-number">3</span>
+      <span class="step-label">Select Date & Time</span>
+    </div>
+    <div class="step" [class.active]="currentStep === 'confirmation'">
+      <span class="step-number">4</span>
+      <span class="step-label">Confirmation</span>
+    </div>
+  </div>
+  
+  <!-- Step 1: Service Selection -->
+  <div *ngIf="currentStep === 'service'" class="step-content">
+    <h2>Select a Service</h2>
+    <div class="services-list" *ngIf="services$ | async as services; else loading">
+      <div *ngFor="let service of services" class="service-card" (click)="selectService(service)">
+        <h3>{{ service.name }}</h3>
+        <p>{{ service.description }}</p>
+        <div class="service-details">
+          <span class="duration">Duration: {{ service.duration_min }} minutes</span>
+          <span class="price">Price: ${{ service.price_cents / 100 | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+    <ng-template #loading>
+      <p>Loading services...</p>
+    </ng-template>
+  </div>
+  
+  <!-- Step 2: Staff Selection -->
+  <div *ngIf="currentStep === 'staff'" class="step-content">
+    <h2>Select a Staff Member</h2>
+    <div class="selected-service-summary" *ngIf="selectedService">
+      <p><strong>{{ selectedService.name }}</strong> - ${{ selectedService.price_cents / 100 | number:'1.2-2' }} ({{ selectedService.duration_min }} min)</p>
+      <button (click)="goToStep('service')">Change Service</button>
+    </div>
+    <div class="staff-list" *ngIf="staff$ | async as staff; else loading">
+      <div *ngFor="let staffMember of staff" class="staff-card" (click)="selectStaff(staffMember)">
+        <h3>{{ staffMember.name }}</h3>
+        <p>{{ staffMember.email }}</p>
+      </div>
+    </div>
+    <ng-template #loading>
+      <p>Loading staff...</p>
+    </ng-template>
+  </div>
+  
+  <!-- Step 3: Schedule Selection -->
+  <div *ngIf="currentStep === 'schedule'" class="step-content">
+    <h2>Select Date and Time</h2>
+    <div class="selected-summary">
+      <p *ngIf="selectedService"><strong>Service:</strong> {{ selectedService.name }}</p>
+      <p *ngIf="selectedStaff"><strong>Staff:</strong> {{ selectedStaff.name }}</p>
+      <button (click)="goToStep('staff')">Change Staff</button>
+    </div>
+    
+    <div class="schedule-selection">
+      <div class="date-picker">
+        <label for="date-input">Select Date:</label>
+        <input #dateInput type="date" id="date-input" [value]="selectedDate" (change)="selectDate(dateInput.value)" required>
+      </div>
+      
+         <div class="time-slots" *ngIf="selectedDate && (schedules$ | async) as schedules; else loadingSchedules">
+           <ng-container *ngIf="getSchedulesForDate(schedules, selectedDate) as filteredSchedules">
+              <h3>Available Time Slots for {{ selectedDate | date:'MMMM d, yyyy' }}</h3>
+              <div *ngIf="filteredSchedules.length === 0" class="no-schedules">
+               <p>No available time slots for this date. Please select a different date.</p>
+             </div>
+             <div class="time-grid" *ngIf="filteredSchedules.length > 0">
+               <ng-container *ngFor="let schedule of filteredSchedules">
+                 <button
+                   *ngFor="let timeSlot of getTimeSlots(schedule)"
+                   class="time-slot"
+                   [class.selected]="selectedTime === timeSlot"
+                   (click)="selectTime(timeSlot)">
+                   {{ apptBookingService.formatTime(timeSlot) }}
+                 </button>
+               </ng-container>
+             </div>
+           </ng-container>
+         </div>
+      <ng-template #loadingSchedules>
+        <p>Loading schedule...</p>
+      </ng-template>
+    </div>
+  </div>
+  
+  <!-- Step 4: Confirmation -->
+  <div *ngIf="currentStep === 'confirmation'" class="step-content">
+    <h2>Confirm Your Appointment</h2>
+    
+    <div class="confirmation-summary" *ngIf="selectedService && selectedStaff && selectedSchedule">
+      <h3>Appointment Details</h3>
+      <div class="summary-item">
+        <strong>Service:</strong> {{ selectedService.name }}
+      </div>
+      <div class="summary-item">
+        <strong>Staff Member:</strong> {{ selectedStaff.name }}
+      </div>
+      <div class="summary-item">
+        <strong>Date & Time:</strong> {{ apptBookingService.formatLocalAppointment(selectedDate, selectedTime) }}
+      </div>
+       <div class="summary-item">
+         <strong>Duration:</strong> {{ selectedService.duration_min }} minutes
+       </div>
+      <div class="summary-item total">
+        <strong>Total Price:</strong> ${{ getTotalPrice() / 100 | number:'1.2-2' }}
+      </div>
+    </div>
+    
+    <div class="customer-info">
+      <h3>Your Information</h3>
+      <form (ngSubmit)="bookAppointment()">
+        <div class="form-group">
+          <label for="customerName">Full Name *</label>
+          <input 
+            type="text" 
+            id="customerName" 
+            [(ngModel)]="customerName" 
+            name="customerName"
+            required
+            placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label for="customerEmail">Email *</label>
+          <input 
+            type="email" 
+            id="customerEmail" 
+            [(ngModel)]="customerEmail" 
+            name="customerEmail"
+            required
+            placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+          <label for="customerPhone">Phone Number *</label>
+          <input 
+            type="tel" 
+            id="customerPhone" 
+            [(ngModel)]="customerPhone" 
+            name="customerPhone"
+            required
+            placeholder="Enter your phone number">
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" (click)="goToStep('schedule')" class="btn-secondary">Back</button>
+          <button type="submit" [disabled]="isLoading || !canProceedToConfirmation()" class="btn-primary">
+            {{ isLoading ? 'Booking...' : 'Confirm Booking' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Navigation Buttons (for steps 1-3) -->
+   <div class="navigation-buttons" *ngIf="currentStep !== 'confirmation' && currentStep !== 'service'">
+     <button (click)="goToStep('service')" class="btn-secondary">Start Over</button>
+     <button (click)="goToStep(currentStep === 'staff' ? 'service' : 'staff')" class="btn-secondary" [disabled]="!selectedService">
+       Back
+     </button>
+     <button (click)="goToStep(currentStep === 'staff' ? 'schedule' : 'confirmation')" class="btn-primary" [disabled]="currentStep === 'schedule' ? !canProceedFromSchedule() : !canProceedToConfirmation()">
+       Continue
+     </button>
+   </div>
+  
+  <div class="navigation-buttons" *ngIf="currentStep === 'confirmation' && !successMessage">
+    <button (click)="goToStep('schedule')" class="btn-secondary">Back to Edit</button>
+    <button (click)="bookAppointment()" class="btn-primary" [disabled]="isLoading || !canProceedToConfirmation()">
+      {{ isLoading ? 'Booking...' : 'Confirm Booking' }}
+    </button>
+  </div>
+  
+  <div class="navigation-buttons" *ngIf="successMessage">
+    <button (click)="resetBooking()" class="btn-primary">Book Another Appointment</button>
+  </div>
+</div>

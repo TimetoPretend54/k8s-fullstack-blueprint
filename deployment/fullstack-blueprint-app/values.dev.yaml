@@ -34,6 +34,8 @@ backend:
     DB_PASSWORD: "password"
     DB_NAME: "k8s_blueprint"
     DB_SSL_MODE: "disable"
+    # Appointment booking database name (separate database for feature isolation)
+    APPT_BOOKING_DB_NAME: "appt_booking"
 
 # Frontend development settings
 frontend-nginx:

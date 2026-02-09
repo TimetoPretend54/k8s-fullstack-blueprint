@@ -36,7 +36,8 @@ echo -e "- Some ports will be forwarded, so you can access this container via lo
 echo -e "- Run \`${COLOR_GREEN}npm run watch${COLOR_RESET}\` to start the application manually"
 echo -e "- Or just let ng serve handle it automatically (it's already running)"
 echo -e ""
-echo -e "Navigate to ${COLOR_CYAN}http://localhost:4200/${COLOR_RESET} view your application."
+echo -e "Navigate to ${COLOR_CYAN}http://localhost:4200/${COLOR_RESET} to view your 'hello-world' application."
+echo -e "Navigate to ${COLOR_CYAN}http://localhost:4200/appt-booking/home/${COLOR_RESET} to view your 'appt-booking' application."
 
 # Run npm run watch (this typically runs ng build --watch)
 npm run watch

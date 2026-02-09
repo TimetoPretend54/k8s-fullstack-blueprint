@@ -60,3 +60,6 @@ temp/
 
 # Helm Downloaded Charts (Dependencies)
 /deployment/fullstack-blueprint-app/charts
+
+# Local Docs
+/local-docs

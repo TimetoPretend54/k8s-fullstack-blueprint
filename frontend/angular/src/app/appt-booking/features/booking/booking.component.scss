@@ -1,0 +1,374 @@
+.booking-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    color: #444;
+  }
+  
+  h3 {
+    margin-bottom: 1rem;
+    color: #555;
+  }
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  
+  &-error {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+  }
+  
+  &-success {
+    background-color: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+  }
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 50px;
+    right: 50px;
+    height: 2px;
+    background-color: #ddd;
+    z-index: 0;
+  }
+  
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #ddd;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .step-label {
+      font-size: 0.875rem;
+      color: #666;
+      text-align: center;
+    }
+    
+    &.active {
+      .step-number {
+        background-color: #007bff;
+        color: white;
+      }
+      
+      .step-label {
+        color: #007bff;
+        font-weight: bold;
+      }
+    }
+    
+    &.completed {
+      .step-number {
+        background-color: #28a745;
+        color: white;
+      }
+      
+      .step-label {
+        color: #28a745;
+      }
+    }
+  }
+}
+
+.step-content {
+  background: #f9f9f9;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.services-list,
+.staff-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.service-card,
+.staff-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+  }
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .service-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    font-size: 0.875rem;
+    
+    .duration {
+      color: #666;
+    }
+    
+    .price {
+      font-weight: bold;
+      color: #28a745;
+    }
+  }
+}
+
+.selected-service-summary,
+.selected-summary {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #007bff;
+  
+  p {
+    margin: 0;
+  }
+  
+  button {
+    margin-top: 0.5rem;
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.875rem;
+    
+    &:hover {
+      color: #0056b3;
+    }
+  }
+}
+
+.schedule-selection {
+  .date-picker {
+    margin-bottom: 2rem;
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    input[type="date"] {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      width: 200px;
+    }
+  }
+  
+  .time-slots {
+    h3 {
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .no-schedules {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+  }
+  
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .time-slot {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #333; // Ensure text is visible
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: #007bff;
+      background-color: #f0f8ff;
+      color: #333;
+    }
+    
+    &.selected {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+  }
+}
+
+.confirmation-summary {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #28a745;
+  
+  .summary-item {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &.total {
+      font-size: 1.25rem;
+      color: #28a745;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 2px solid #eee;
+    }
+  }
+}
+
+.customer-info {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  
+  h3 {
+    margin-bottom: 1rem;
+  }
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+    
+    &::placeholder {
+      color: #aaa;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.navigation-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #ddd;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #545b62;
+  }
+}

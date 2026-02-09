@@ -1,0 +1,109 @@
+<div class="dashboard">
+  <h1>Admin Dashboard</h1>
+  <p class="subtitle">Overview of appointments, revenue, and staff</p>
+  
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+  
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !loading">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button (click)="loadAllData()" class="btn btn-primary">Retry</button>
+  </div>
+  
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading && !error">
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Revenue</h3>
+        <p class="stat-value">{{ formatPrice(totalRevenue) }}</p>
+        <span class="stat-label">From completed appointments</span>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Total Appointments</h3>
+        <p class="stat-value">{{ appointments.length }}</p>
+        <span class="stat-label">All time</span>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Staff Members</h3>
+        <p class="stat-value">{{ staff.length }}</p>
+        <span class="stat-label">Active providers</span>
+      </div>
+    </div>
+    
+    <!-- Staff Overview -->
+    <section class="section">
+      <h2>Staff Overview</h2>
+      <div class="staff-grid">
+        <div class="staff-card" *ngFor="let s of staff">
+          <h3>{{ s.name }}</h3>
+          <p class="staff-email">{{ s.email }}</p>
+          <div class="staff-stats">
+            <span class="stat">Appointments: {{ appointmentsByStaff.get(s.id) || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Appointment Management -->
+    <section class="section">
+      <h2>Appointment Management</h2>
+      <div class="table-container">
+        <table class="appointments-table">
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Customer</th>
+              <th>Service</th>
+              <th>Provider</th>
+              <th>Status</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let appt of appointments">
+              <td>{{ formatDateTime(appt.appointment_datetime) }}</td>
+              <td>
+                {{ appt.customer_name }}<br>
+                <small>{{ appt.customer_email }}</small>
+              </td>
+              <td>{{ getServiceName(appt.service_id) }}</td>
+              <td>{{ getStaffName(appt.staff_id) }}</td>
+              <td>
+                <span class="status-badge" [class]="getStatusBadgeClass(appt.status)">
+                  {{ appt.status }}
+                </span>
+              </td>
+              <td>{{ formatPrice(appt.price_cents) }}</td>
+              <td class="actions">
+                <button 
+                  *ngIf="appt.status === 'confirmed'"
+                  (click)="completeAppointment(appt.id)" 
+                  class="btn btn-sm btn-success"
+                >
+                  Complete
+                </button>
+                <button 
+                  *ngIf="appt.status !== 'cancelled'"
+                  (click)="cancelAppointment(appt.id)" 
+                  class="btn btn-sm btn-danger"
+                >
+                  Cancel
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

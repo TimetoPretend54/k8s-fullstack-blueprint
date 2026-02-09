@@ -26,7 +26,15 @@ func main() {
 	}
 
 	// Load routes
-	api.SetupRoutes(e, container.HealthHandler, container.DemoDataHandler)
+	api.SetupRoutes(
+		e,
+		container.HealthHandler,
+		container.DemoDataHandler,
+		container.ServiceHandler,
+		container.StaffHandler,
+		container.ScheduleHandler,
+		container.AppointmentHandler,
+	)
 
 	// Get port from environment or default
 	port := getEnv("PORT", "8080")
