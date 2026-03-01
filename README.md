@@ -6,7 +6,7 @@
 
 **Production-oriented cloud-native full-stack blueprint for Go + Angular + Kubernetes**
 
-A repository structure and documentation template for building and deploying cloud-native full-stack applications using Go (backend), Angular (frontend), Docker, and Kubernetes.
+A repository structure and documentation template for building and deploying cloud-native full-stack applications using Go (backend), PostgreSQL (database), Angular (frontend), Docker, and Kubernetes/Helm.
 
 > **Note:** This is a **blueprint/template** project, not an actual application. It provides structural foundation and documentation for teams to build upon.
 
