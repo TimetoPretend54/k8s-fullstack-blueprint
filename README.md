@@ -1,5 +1,9 @@
 # k8s-fullstack-blueprint
 
+<p align="center">
+    <img src="./docs/assets/k8s-fullstack-blueprint.gif" width="90%"/><br>
+</p>
+
 **Production-oriented cloud-native full-stack blueprint for Go + Angular + Kubernetes**
 
 A repository structure and documentation template for building and deploying cloud-native full-stack applications using Go (backend), Angular (frontend), Docker, and Kubernetes.
